@@ -29,7 +29,7 @@ func main() {
      		fmt.Print("\n\033[1;31mNo such file or directory\033[m\n")
      		os.Exit(-1)
     	}
-    	checkFormat(data) // cast a []byte into string, not 
+    	checkFormat(data)
     } else {
     	fmt.Printf("\n\033[1;31mPlease put only one file in argument, currently, there is %d argument(s)\033[m\n", len(os.Args) - 1 )
     }
