@@ -2,10 +2,10 @@ package main
 import (
 	"bufio"
 	"fmt" // for print
-	"log"
 	"os" // for Args and exit
 	"strconv"
 	"strings"
+	"errors"
 )
 func checkFormat(data []byte) bool {
 	fmt.Printf("string read:\n%s\n", data)
@@ -21,11 +21,10 @@ func checkFormat(data []byte) bool {
 	return true
 }
 
-func read_file(name string) []int {
+func read_file(name string) ([]int, error) {
 	file, err := os.Open(name)
 	if err != nil {
-		fmt.Print("\n\033[1;31mNo such file or directory\033[m\n")
-		log.Fatal(err)
+		return nil, errors.New("No such file or directory")
 	}
 	defer file.Close()
 
@@ -39,10 +38,10 @@ func read_file(name string) []int {
 
 	size, err := strconv.Atoi(strings.Trim(scanner.Text(), "\n \t"))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	if size < 2 {
-		log.Fatal("Puzzle size must be at least 2")
+		return nil, errors.New("Puzzle size must be at least 2")
 	}
 	initial_state := make([]int, size*size)
 	i := 0
@@ -51,40 +50,44 @@ func read_file(name string) []int {
 			continue
 		}
 		if i == size {
-			log.Fatal("Too many rows")
+			return nil, errors.New("Too many rows")
 		}
 
 		parts := strings.Split(strings.Trim(scanner.Text(), "\n \t"), " ")
 		if len(parts) < size {
-			log.Fatal("Row too short")
+			return nil, errors.New("Row too short")
 		}
 		if (len(parts) > size && strings.Trim(parts[size], "\n \t")[0] != '#') {
-			log.Fatal("Row too long")
+			return nil, errors.New("Row too long")
 		}
 
 		for j := 0; j < size; j++ {
 			initial_state[i*size+j], err = strconv.Atoi(parts[j])
 			if err != nil {
-				log.Fatal(err)
+				return nil, err
 			}
 		}
 		i++
 	}
 	if i < size {
-		log.Fatal("Not enough rows")
+		return nil, errors.New("Not enough rows")
 	}
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return initial_state
+	return initial_state, nil
 }
 
 func main() {
 	if 2 == len(os.Args) {
-		input := read_file(os.Args[1])
-		fmt.Println(input);
+		input, err := read_file(os.Args[1])
+		if err != nil {
+			fmt.Printf("\033[1;31m%s\033[m\n", err)
+		} else {
+			fmt.Println(input);
+		}
 	} else {
-		fmt.Printf("\n\033[1;31mPlease put only one file in argument, currently, there is %d argument(s)\033[m\n", len(os.Args)-1)
+		fmt.Printf("\033[1;31mPlease put only one file in argument, currently, there is %d argument(s)\033[m\n", len(os.Args)-1)
 	}
 	return
 	/*
