@@ -1,0 +1,2 @@
+https://www.cse.iitk.ac.in/users/cs365/2009/ppt/13jan_Aman.pdf
+Explanation about A star algorithm
