@@ -1,7 +1,8 @@
 package algo
 
-func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (int, error) {
-	sigmaDistance := 0
+func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (sigmaDistance int, err error) {
+	sigmaDistance = 0
+	err = nil
 	for i := 0; i < len(currentArray) - 1; i++ {
 		value := solvedArray[i]
 		currentPosition, err := returnIndexOfAValue(value, currentArray)
@@ -14,10 +15,12 @@ func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (int, 
 	return sigmaDistance, err
 }
 
-func returnIndexOfAValue(value int, currentArray []int) (int, error) {
+func returnIndexOfAValue(value int, currentArray []int) (result int, err error) {
 	for i := 0; i < len(currentArray) - 1; i++ {
 		if currentArray[i] == value {
-			return i, nil
+			result = i
+			err = nil
+			return result, err
 		}
 	}
 	return -1, errors.New("Value has not been reached into returnIndexOfAValue")
