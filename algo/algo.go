@@ -1,6 +1,6 @@
 package algo
 
-func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (int error) {
+func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (int, error) {
 	sigmaDistance := 0
 	for i := 0; i < len(currentArray) - 1; i++ {
 		value := solvedArray[i]
@@ -14,7 +14,7 @@ func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (int e
 	return sigmaDistance, err
 }
 
-func returnIndexOfAValue(value int, currentArray []int) (int error) {
+func returnIndexOfAValue(value int, currentArray []int) (int, error) {
 	for i := 0; i < len(currentArray) - 1; i++ {
 		if currentArray[i] == value {
 			return i, nil
