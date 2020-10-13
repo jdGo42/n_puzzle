@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"errors"
+	"github.com/jdgo42/n_puzzle/algo"	
 )
 func checkFormat(data []byte) bool {
 	fmt.Printf("string read:\n%s\n", data)
@@ -166,7 +167,7 @@ func main() {
 	fmt.Printf("5bis\n")
 	createSolvedState(5)
 	fmt.Printf("\n\n25\n\n")
-	createSolvedState(25)
+	createSolvedState(10)
 	
 	return
 	/*

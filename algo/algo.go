@@ -15,7 +15,7 @@ func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (int e
 }
 
 func returnIndexOfAValue(value int, currentArray []int) (int error) {
-	for i := 0; i < len(currentArray) - 1; i++; {
+	for i := 0; i < len(currentArray) - 1; i++ {
 		if currentArray[i] == value {
 			return i, nil
 		}
