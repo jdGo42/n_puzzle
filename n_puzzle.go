@@ -99,7 +99,7 @@ func createSolvedState(size int) []int{
 				value++
 			}
 		}
-		printSquareFromArray(array, size)
+		// printSquareFromArray(array, size)
 //		fmt.Println("apres 1ere ligne")
 		for j := size * nbrTurns - 1; j < len(array); j++ {
 			if j % size == size - nbrTurns - 1 && array[j] == 0 {
@@ -107,7 +107,7 @@ func createSolvedState(size int) []int{
 				value++
 			}
 		}
-		printSquareFromArray(array, size)
+		// printSquareFromArray(array, size)
 //		fmt.Println("apres last column")
 		for k := len(array) - nbrTurns * size - 1; k >= len(array) - size * (nbrTurns + 1) ; k-- {
 			if array[k] == 0 {
@@ -115,7 +115,7 @@ func createSolvedState(size int) []int{
 				value++
 			}
 		}
-		printSquareFromArray(array, size)
+		// printSquareFromArray(array, size)
 //		fmt.Println("apres last ligne")
 		for l := totalNbrTiles - nbrTurns * size - 1; l > 0; l-- {
 			if l % size == nbrTurns && array[l] == 0 {
@@ -123,7 +123,7 @@ func createSolvedState(size int) []int{
 				value++
 			}
 		}
-		printSquareFromArray(array, size)
+		// printSquareFromArray(array, size)
 //		fmt.Println("apres first column")
 
 		nbrTurns++
@@ -160,10 +160,12 @@ func main() {
 			fmt.Printf("\033[1;31m%s\033[m\n", err)
 		} else {
 			fmt.Println(input);
-			objective := createSolvedState(size)
-			current := input
-			fmt.Printf
-			sigmaDistance, err := CalculSigmaDistance(objective, current, size)
+			goalState := createSolvedState(size)
+			currentState := input
+			fmt.Println("goalState")
+			printSquareFromArray(goalState, size)
+			printSquareFromArray(currentState, size)
+			sigmaDistance, err := CalculSigmaDistance(goalState, currentState, size)
 			fmt.Printf("sigmaDistance here :%d\n and err %v\n", sigmaDistance, err)
 		}
 	} else {
