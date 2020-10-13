@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"errors"
-	"github.com/jdgo42/n_puzzle/algo"	
+	//"n_puzzle/algo"	
 )
 func checkFormat(data []byte) bool {
 	fmt.Printf("string read:\n%s\n", data)
@@ -22,10 +22,10 @@ func checkFormat(data []byte) bool {
 	return true
 }
 
-func readFile(name string) ([]int, error) {
+func readFile(name string) ([]int, int, error) {
 	file, err := os.Open(name)
 	if err != nil {
-		return nil, errors.New("No such file or directory")
+		return nil, 0,  errors.New("No such file or directory")
 	}
 	defer file.Close()
 
@@ -39,10 +39,10 @@ func readFile(name string) ([]int, error) {
 	// should we manage "correct maps" without size defined?
 	size, err := strconv.Atoi(strings.Trim(scanner.Text(), "\n \t"))
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if size < 2 {
-		return nil, errors.New("Puzzle size must be at least 2")
+		return nil, 0, errors.New("Puzzle size must be at least 2")
 	}
 	initialState := make([]int, size*size) 
 	// Should we represent it as an array of int or an array of array of int already there?
@@ -55,32 +55,32 @@ func readFile(name string) ([]int, error) {
 			continue
 		}
 		if i == size {
-			return nil, errors.New("Too many rows")
+			return nil, 0,  errors.New("Too many rows")
 		}
 
 		parts := strings.Split(strings.Trim(scanner.Text(), "\n \t"), " ")
 		if len(parts) < size {
-			return nil, errors.New("Row too short")
+			return nil, 0, errors.New("Row too short")
 		}
 		if (len(parts) > size && strings.Trim(parts[size], "\n \t")[0] != '#') {
-			return nil, errors.New("Row too long")
+			return nil, 0, errors.New("Row too long")
 		}
 
 		for j := 0; j < size; j++ {
 			initialState[i*size+j], err = strconv.Atoi(parts[j])
 			if err != nil {
-				return nil, err
+				return nil, 0,  err
 			}
 		}
 		i++
 	}
 	if i < size {
-		return nil, errors.New("Not enough rows")
+		return nil, 0, errors.New("Not enough rows")
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return initialState, nil
+	return initialState, size, nil
 }
 
 // by default the goal is the snail pattern, we could manage differents ways as an option
@@ -155,19 +155,20 @@ func printSquareFromArray(array []int, size int){
 
 func main() {
 	if 2 == len(os.Args) {
-		input, err := readFile(os.Args[1])
+		input, size, err := readFile(os.Args[1])
 		if err != nil {
 			fmt.Printf("\033[1;31m%s\033[m\n", err)
 		} else {
 			fmt.Println(input);
+			objective := createSolvedState(size)
+			current := input
+			fmt.Printf
+			sigmaDistance, err := CalculSigmaDistance(objective, current, size)
+			fmt.Printf("sigmaDistance here :%d\n and err %v\n", sigmaDistance, err)
 		}
 	} else {
 		fmt.Printf("\033[1;31mPlease put only one file in argument, currently, there is %d argument(s)\033[m\n", len(os.Args)-1)
 	}
-	fmt.Printf("5bis\n")
-	createSolvedState(5)
-	fmt.Printf("\n\n25\n\n")
-	createSolvedState(10)
 	
 	return
 	/*
@@ -178,4 +179,44 @@ func main() {
 	solve and display solutions
 	return 😉
 	*/
+}
+
+
+func CalculSigmaDistance(solvedArray []int, currentArray []int, size int) (sigmaDistance int, err error) {
+	sigmaDistance = 0
+	for i := 0; i < len(currentArray) - 1; i++ {
+		value := solvedArray[i]
+		currentPosition, err := returnIndexOfAValue(value, currentArray)
+		if err != nil {
+			sigmaDistance += getDistanceBetweenTwoPoints(i, currentPosition, size)
+		} else {
+			return sigmaDistance, err
+		}
+	}
+	return sigmaDistance, err
+}
+
+func returnIndexOfAValue(value int, currentArray []int) (result int, err error) {
+	for i := 0; i < len(currentArray) - 1; i++ {
+		if currentArray[i] == value {
+			result = i
+			return result, nil
+		}
+	}
+	return -1, errors.New("Value has not been reached into returnIndexOfAValue")
+}
+
+func getDistanceBetweenTwoPoints(index, currentPosition, size int) int {
+	distanceInLine := absolute((index % size) - (currentPosition % size))
+	distanceInColumn := absolute((index / size) - (currentPosition / size))
+	totalDistance := distanceInColumn + distanceInLine
+	return totalDistance 
+}
+
+func absolute(negativeNbr int) int {
+	positiveNumber := negativeNbr
+	if negativeNbr < 0 {
+		positiveNumber = positiveNumber * -1
+	}
+	return positiveNumber
 }
