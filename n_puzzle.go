@@ -21,7 +21,7 @@ func checkFormat(data []byte) bool {
 	return true
 }
 
-func read_file(name string) ([]int, error) {
+func readFile(name string) ([]int, error) {
 	file, err := os.Open(name)
 	if err != nil {
 		return nil, errors.New("No such file or directory")
@@ -35,7 +35,7 @@ func read_file(name string) ([]int, error) {
 	for strings.Trim(scanner.Text(), "\n \t")[0] == '#' {
 		scanner.Scan()
 	}
-
+	// should we manage "correct maps" without size defined?
 	size, err := strconv.Atoi(strings.Trim(scanner.Text(), "\n \t"))
 	if err != nil {
 		return nil, err
@@ -43,7 +43,11 @@ func read_file(name string) ([]int, error) {
 	if size < 2 {
 		return nil, errors.New("Puzzle size must be at least 2")
 	}
-	initial_state := make([]int, size*size)
+	initialState := make([]int, size*size) 
+	// Should we represent it as an array of int or an array of array of int already there?
+	// Both options are possible, for the first one we can play with %size to get the tile upside and downside
+	// for the second one is [i][j] -1 or +1
+	// i guess we can manage it with only one array good challenge
 	i := 0
 	for scanner.Scan() {
 		if strings.Trim(scanner.Text(), "\n \t")[0] == '#' {
@@ -62,7 +66,7 @@ func read_file(name string) ([]int, error) {
 		}
 
 		for j := 0; j < size; j++ {
-			initial_state[i*size+j], err = strconv.Atoi(parts[j])
+			initialState[i*size+j], err = strconv.Atoi(parts[j])
 			if err != nil {
 				return nil, err
 			}
@@ -75,12 +79,82 @@ func read_file(name string) ([]int, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	return initial_state, nil
+	return initialState, nil
+}
+
+// by default the goal is the snail pattern, we could manage differents ways as an option
+// by default the puzzle goes from 1 to size * size -1
+// this is an attempt of all in one array, we could do it with [][]
+
+func createSolvedState(size int) []int{
+	totalNbrTiles := size * size
+	array := make([]int, totalNbrTiles)
+	value := 1
+	nbrTurns := 0
+	for thereIsStillAZero(array) {
+		for i := size * nbrTurns; i < size * (nbrTurns + 1); i++ {
+			if array [i] == 0 {
+				array[i] = value
+				value++
+			}
+		}
+		printSquareFromArray(array, size)
+//		fmt.Println("apres 1ere ligne")
+		for j := size * nbrTurns - 1; j < len(array); j++ {
+			if j % size == size - nbrTurns - 1 && array[j] == 0 {
+				array[j] = value
+				value++
+			}
+		}
+		printSquareFromArray(array, size)
+//		fmt.Println("apres last column")
+		for k := len(array) - nbrTurns * size - 1; k >= len(array) - size * (nbrTurns + 1) ; k-- {
+			if array[k] == 0 {
+				array[k] = value
+				value++
+			}
+		}
+		printSquareFromArray(array, size)
+//		fmt.Println("apres last ligne")
+		for l := totalNbrTiles - nbrTurns * size - 1; l > 0; l-- {
+			if l % size == nbrTurns && array[l] == 0 {
+				array[l] = value
+				value++
+			}
+		}
+		printSquareFromArray(array, size)
+//		fmt.Println("apres first column")
+
+		nbrTurns++
+	}
+	// TODO take the maximum and put it to zero to create an empty tile
+
+	return array
+}
+
+// Stop condition to the create solved state function
+func thereIsStillAZero(array []int) bool {
+	for i:=0; i < len(array); i++ {
+		if array[i] == 0 {
+			
+//		fmt.Println("there is still a zero at index",i)
+			return true
+		}
+	}
+//	fmt.Println("there is no more zero")
+	return false
+}
+
+// print square from array takes an array of int and a size and diplay it
+func printSquareFromArray(array []int, size int){
+	for i:=1; i <= size; i++ {
+		fmt.Println(array[(size * (i - 1)) :(size * i)])
+	}
 }
 
 func main() {
 	if 2 == len(os.Args) {
-		input, err := read_file(os.Args[1])
+		input, err := readFile(os.Args[1])
 		if err != nil {
 			fmt.Printf("\033[1;31m%s\033[m\n", err)
 		} else {
@@ -89,6 +163,11 @@ func main() {
 	} else {
 		fmt.Printf("\033[1;31mPlease put only one file in argument, currently, there is %d argument(s)\033[m\n", len(os.Args)-1)
 	}
+	fmt.Printf("5bis\n")
+	createSolvedState(5)
+	fmt.Printf("\n\n25\n\n")
+	createSolvedState(25)
+	
 	return
 	/*
 	handle args
