@@ -164,6 +164,7 @@ func main() {
 			currentState := input
 			fmt.Println("goalState")
 			printSquareFromArray(goalState, size)
+			fmt.Println("currentState")
 			printSquareFromArray(currentState, size)
 			sigmaDistance, err := CalculSigmaDistance(goalState, currentState, size)
 			fmt.Printf("sigmaDistance here :%d\n and err %v\n", sigmaDistance, err)
