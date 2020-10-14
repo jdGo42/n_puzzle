@@ -1,11 +1,17 @@
 package main
 
 import (
+	"./goal_generator"
+	"./manhattan"
 	"fmt"
-	"math/rand"
+	//"math/rand"
 )
 
-var g_size = 2
+var g_size = 3
+var goalState = goalGenerator.Generator(g_size)
+
+//var init_state = []int{2, 0, 3, 1}
+var init_state = []int{0, 2, 7, 4, 1, 3, 8, 6, 5}
 
 type position struct {
 	state     []int
@@ -15,7 +21,7 @@ type position struct {
 }
 
 func getHeuristic(state []int) int {
-	return rand.Int()
+	return manhattanDistance.GetStateScore(g_size, state, goalState)
 }
 
 func getZeroIndex(state []int) int {
@@ -29,37 +35,43 @@ func getZeroIndex(state []int) int {
 	return zeroIndex
 }
 
-func stateCmp(s1 []int, s2 []int) int {
-	i := 0
-	for i < len(s1) {
+func isSameState(s1 []int, s2 []int) bool {
+	for i := 0; i < len(s1); i++ {
 		if s1[i] != s2[i] {
-			return 1
+			return false
 		}
-		i++
 	}
-	return 0
+	return true
 }
 
 func insertInOpenList(openList []position, closeList []position, pos position) []position {
-	i := 0
-	l := 0
-	for i < len(closeList) {
-		if stateCmp(pos.state, closeList[i].state) == 0 {
+	for i := 0; i < len(closeList); i++ {
+		if isSameState(pos.state, closeList[i].state) {
 			return openList
 		}
-		i++
 	}
-	i = 0
-	for i < len(openList) {
-		if stateCmp(pos.state, openList[i].state) == 0 && openList[i].cost <= pos.cost {
-			return openList
-		}
-		if pos.heuristic < openList[i].heuristic && l == 0 {
+	l := -1
+	for i := 0; i < len(openList); i++ {
+		if pos.heuristic >= openList[i].heuristic && l == -1 {
 			l = i
 		}
-		i++
+		if isSameState(pos.state, openList[i].state) {
+			if openList[i].cost <= pos.cost {
+				return openList
+			}
+			copy(openList[i:], openList[i+1:])
+			openList = openList[:len(openList)-1]
+		}
 	}
-	return append(openList[:l], append([]position{pos}, openList[l:]...)...)
+	//	fmt.Println(pos)
+	//	fmt.Println(openList)
+	if l == -1 {
+		l = len(openList)
+	}
+	tmp := append(openList[:l], append([]position{pos}, openList[l:]...)...)
+	//	fmt.Println(tmp, "\n")
+	return tmp
+
 }
 
 func visitPosition(pos position, openList []position, closedList []position) []position {
@@ -104,7 +116,7 @@ func createPosition(state []int, cost int, prev int) position {
 	tmp.state = make([]int, len(state))
 	copy(tmp.state, state)
 	tmp.cost = cost
-	tmp.heuristic = cost + getHeuristic(state)
+	tmp.heuristic = getHeuristic(state) + cost
 	tmp.prev = prev
 	return tmp
 }
@@ -117,25 +129,31 @@ func rewind(pos position, closedList []position) {
 }
 
 func Resolve(initial_state []int) {
-	var closedList []position
-	var openList []position
+	closedList := make([]position, 0)
+	openList := make([]position, 0)
 	var pos position
 
 	start := createPosition(initial_state, 0, -1)
 	openList = append(openList, start)
+	i := 0
 	for len(openList) != 0 {
+		//	if i > 10 {
+		//		return
+		//	}
 		pos = openList[len(openList)-1]
 		openList = openList[:len(openList)-1]
-		if stateCmp(pos.state, []int{0, 1, 2, 3}) == 0 {
-			break
+		//fmt.Println(i, pos, len(openList))
+		i++
+		if isSameState(pos.state, goalState) {
+			rewind(pos, closedList)
+			return
 		}
 		closedList = append(closedList, pos)
 		openList = visitPosition(pos, openList, closedList)
 	}
-	rewind(pos, closedList)
+	fmt.Println("Unsolvable puzzle")
 }
 
 func main() {
-	init_state := []int{1, 3, 2, 0}
 	Resolve(init_state)
 }
