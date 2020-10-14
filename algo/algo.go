@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 func main() {
@@ -76,7 +77,7 @@ func getDistanceBetweenTwoPoints(index, currentPosition, size int) int {
 }
 
 func absolute(n int) int {
-	y := n >> 63
+	y := n >> (strconv.IntSize - 1)
 	return (n ^ y) - y
 }
 
