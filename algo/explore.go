@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 )
 
-var size = 2
+var g_size = 2
 
 type position struct {
 	state     []int
@@ -13,15 +14,8 @@ type position struct {
 	prev      int
 }
 
-var g_i = 0
-
 func getHeuristic(state []int) int {
-	g_i++
-	if g_i >= 5 {
-		return 0
-	} else {
-		return 1
-	}
+	return rand.Int()
 }
 
 func getZeroIndex(state []int) int {
@@ -74,28 +68,28 @@ func visitPosition(pos position, openList []position, closedList []position) []p
 
 	state := make([]int, len(pos.state))
 	var newPos position
-	if zeroIndex/size > 0 {
+	if zeroIndex/g_size > 0 {
 		copy(state, pos.state)
-		state[zeroIndex] = state[zeroIndex-size]
-		state[zeroIndex-size] = 0
+		state[zeroIndex] = state[zeroIndex-g_size]
+		state[zeroIndex-g_size] = 0
 		newPos = createPosition(state, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
-	if zeroIndex/size < size-1 {
+	if zeroIndex/g_size < g_size-1 {
 		copy(state, pos.state)
-		state[zeroIndex] = state[zeroIndex+size]
-		state[zeroIndex+size] = 0
+		state[zeroIndex] = state[zeroIndex+g_size]
+		state[zeroIndex+g_size] = 0
 		newPos = createPosition(state, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
-	if zeroIndex%size > 0 {
+	if zeroIndex%g_size > 0 {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex-1]
 		state[zeroIndex-1] = 0
 		newPos = createPosition(state, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
-	if zeroIndex%size < size-1 {
+	if zeroIndex%g_size < g_size-1 {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex+1]
 		state[zeroIndex+1] = 0
@@ -115,6 +109,13 @@ func createPosition(state []int, cost int, prev int) position {
 	return tmp
 }
 
+func rewind(pos position, closedList []position) {
+	if pos.prev >= 0 {
+		rewind(closedList[pos.prev], closedList)
+	}
+	fmt.Println(pos.state)
+}
+
 func Resolve(initial_state []int) {
 	var closedList []position
 	var openList []position
@@ -124,19 +125,17 @@ func Resolve(initial_state []int) {
 	openList = append(openList, start)
 	for len(openList) != 0 {
 		pos = openList[len(openList)-1]
+		openList = openList[:len(openList)-1]
 		if stateCmp(pos.state, []int{0, 1, 2, 3}) == 0 {
 			break
 		}
-		openList = openList[:len(openList)-1]
 		closedList = append(closedList, pos)
 		openList = visitPosition(pos, openList, closedList)
-		fmt.Println(closedList)
-		fmt.Println(openList)
 	}
-	fmt.Println(pos)
+	rewind(pos, closedList)
 }
 
 func main() {
-	init_state := []int{1, 3, 0, 2}
+	init_state := []int{1, 3, 2, 0}
 	Resolve(init_state)
 }
