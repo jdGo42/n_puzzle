@@ -35,15 +35,13 @@ func getZeroIndex(state []int) int {
 	return zeroIndex
 }
 
-// if !(newPos is in closedList || (newPos is in openList with cost < newCost))
-// append to openList
-
 func stateCmp(s1 []int, s2 []int) int {
 	i := 0
 	for i < len(s1) {
-		if s1[i] != s2[2] {
+		if s1[i] != s2[i] {
 			return 1
 		}
+		i++
 	}
 	return 0
 }
@@ -55,7 +53,9 @@ func insertInOpenList(openList []position, closeList []position, pos position) [
 		if stateCmp(pos.state, closeList[i].state) == 0 {
 			return openList
 		}
+		i++
 	}
+	i = 0
 	for i < len(openList) {
 		if stateCmp(pos.state, openList[i].state) == 0 && openList[i].cost <= pos.cost {
 			return openList
@@ -63,14 +63,14 @@ func insertInOpenList(openList []position, closeList []position, pos position) [
 		if pos.heuristic < openList[i].heuristic && l == 0 {
 			l = i
 		}
+		i++
 	}
 	return append(openList[:l], append([]position{pos}, openList[l:]...)...)
 }
 
-func visitPosition(pos position, openList []position, closedList []position) {
-	closedList = append(closedList, pos)
+func visitPosition(pos position, openList []position, closedList []position) []position {
 	zeroIndex := getZeroIndex(pos.state)
-	posPrev := len(closedList) - 1
+	indexPrevPos := len(closedList) - 1
 
 	state := make([]int, len(pos.state))
 	var newPos position
@@ -78,9 +78,31 @@ func visitPosition(pos position, openList []position, closedList []position) {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex-size]
 		state[zeroIndex-size] = 0
-		newPos = createPosition(state, pos.cost+1, posPrev)
-		openList = insertInOpenList(openList, closeList, newPos)
+		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		openList = insertInOpenList(openList, closedList, newPos)
 	}
+	if zeroIndex/size < size-1 {
+		copy(state, pos.state)
+		state[zeroIndex] = state[zeroIndex+size]
+		state[zeroIndex+size] = 0
+		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		openList = insertInOpenList(openList, closedList, newPos)
+	}
+	if zeroIndex%size > 0 {
+		copy(state, pos.state)
+		state[zeroIndex] = state[zeroIndex-1]
+		state[zeroIndex-1] = 0
+		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		openList = insertInOpenList(openList, closedList, newPos)
+	}
+	if zeroIndex%size < size-1 {
+		copy(state, pos.state)
+		state[zeroIndex] = state[zeroIndex+1]
+		state[zeroIndex+1] = 0
+		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		openList = insertInOpenList(openList, closedList, newPos)
+	}
+	return openList
 }
 
 func createPosition(state []int, cost int, prev int) position {
@@ -96,15 +118,25 @@ func createPosition(state []int, cost int, prev int) position {
 func Resolve(initial_state []int) {
 	var closedList []position
 	var openList []position
+	var pos position
 
-	start := createPosition(initial_state, -1, -1)
+	start := createPosition(initial_state, 0, -1)
 	openList = append(openList, start)
-
-	fmt.Println(closedList)
-	fmt.Println(openList)
+	for len(openList) != 0 {
+		pos = openList[len(openList)-1]
+		if stateCmp(pos.state, []int{0, 1, 2, 3}) == 0 {
+			break
+		}
+		openList = openList[:len(openList)-1]
+		closedList = append(closedList, pos)
+		openList = visitPosition(pos, openList, closedList)
+		fmt.Println(closedList)
+		fmt.Println(openList)
+	}
+	fmt.Println(pos)
 }
 
 func main() {
-	init_state := []int{0, 1, 2, 3}
+	init_state := []int{1, 3, 0, 2}
 	Resolve(init_state)
 }
