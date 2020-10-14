@@ -4,13 +4,11 @@ import (
 	"./goal_generator"
 	"./manhattan"
 	"fmt"
-	//"math/rand"
 )
 
 var g_size = 3
 var goalState = goalGenerator.Generator(g_size)
 
-//var init_state = []int{2, 0, 3, 1}
 var init_state = []int{0, 2, 7, 4, 1, 3, 8, 6, 5}
 
 type position struct {
@@ -63,13 +61,10 @@ func insertInOpenList(openList []position, closeList []position, pos position) [
 			openList = openList[:len(openList)-1]
 		}
 	}
-	//	fmt.Println(pos)
-	//	fmt.Println(openList)
 	if l == -1 {
 		l = len(openList)
 	}
 	tmp := append(openList[:l], append([]position{pos}, openList[l:]...)...)
-	//	fmt.Println(tmp, "\n")
 	return tmp
 
 }
@@ -137,12 +132,8 @@ func Resolve(initial_state []int) {
 	openList = append(openList, start)
 	i := 0
 	for len(openList) != 0 {
-		//	if i > 10 {
-		//		return
-		//	}
 		pos = openList[len(openList)-1]
 		openList = openList[:len(openList)-1]
-		//fmt.Println(i, pos, len(openList))
 		i++
 		if isSameState(pos.state, goalState) {
 			rewind(pos, closedList)
