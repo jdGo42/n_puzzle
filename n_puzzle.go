@@ -28,7 +28,6 @@ func readFile(name string) ([]int, int, error) {
 	for strings.Trim(scanner.Text(), "\n \t")[0] == '#' {
 		scanner.Scan()
 	}
-	// should we manage "correct maps" without size defined?
 	size, err := strconv.Atoi(strings.Trim(scanner.Text(), "\n \t"))
 	if err != nil {
 		return nil, 0, err
@@ -47,11 +46,11 @@ func readFile(name string) ([]int, int, error) {
 		}
 
 		parts := strings.Split(strings.Trim(scanner.Text(), "\n \t"), " ")
-		for i := 0; i < len(parts); i++ {
+		for idx := 0; idx < len(parts); idx++ {
 			if len(parts[i]) == 0 {
-				copy(parts[i:], parts[i+1:])
+				copy(parts[idx:], parts[idx+1:])
 				parts = parts[:len(parts)-1]
-				i--
+				idx--
 			}
 		}
 		if len(parts) < size {
@@ -62,16 +61,29 @@ func readFile(name string) ([]int, int, error) {
 		}
 
 		for j := 0; j < size; j++ {
-			initialState[i*size+j], err = strconv.Atoi(parts[j])
+			tmp, err := strconv.Atoi(parts[j])
 			if err != nil {
 				return nil, 0, err
 			}
+			if tmp >= size*size || tmp < 0 {
+				return nil, 0, errors.New("One of the values is too large")
+			}
+			initialState[i*size+j] = tmp
 		}
 		i++
 	}
 	if i < size {
 		return nil, 0, errors.New("Not enough rows")
 	}
+
+	for i := 0; i < len(initialState); i++ {
+		for j := i + 1; j < len(initialState); j++ {
+			if initialState[i] == initialState[j] {
+				return nil, 0, errors.New("Duplicate number")
+			}
+		}
+	}
+
 	if err := scanner.Err(); err != nil {
 		return nil, 0, err
 	}

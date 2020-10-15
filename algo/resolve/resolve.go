@@ -112,15 +112,25 @@ func createPosition(size int, state []int, goalState []int, cost int, prev int) 
 	return tmp
 }
 
-func rewind(pos position, closedList []position) int {
+func rewind(size int, pos position, closedList []position) int {
 	var ret int
 	if pos.prev >= 0 {
-		ret = rewind(closedList[pos.prev], closedList) + 1
+		ret = rewind(size, closedList[pos.prev], closedList) + 1
 	} else {
 		ret = 0
 	}
-	fmt.Println(pos.state)
+	printTaquin(size, pos.state)
 	return ret
+}
+
+func printTaquin(size int, state []int) {
+	for i := 0; i < len(state); i++ {
+		if i != 0 && i%size == 0 {
+			fmt.Printf("\n")
+		}
+		fmt.Printf("%d ", state[i])
+	}
+	fmt.Printf("\n\n")
 }
 
 func Resolve(size int, initial_state []int) {
@@ -136,7 +146,7 @@ func Resolve(size int, initial_state []int) {
 		openList = openList[:len(openList)-1]
 		closedList = append(closedList, pos)
 		if isSameState(pos.state, goalState) {
-			n_moves := rewind(pos, closedList)
+			n_moves := rewind(size, pos, closedList)
 			fmt.Printf("Time complexity: %d\n", len(closedList))
 			fmt.Printf("Size complexity: %d\n", len(closedList)+len(openList))
 			fmt.Printf("Number of moves: %d\n", n_moves)
