@@ -38,14 +38,14 @@ func isSameState(s1 []int, s2 []int) bool {
 }
 
 func insertInOpenList(openList []position, closeList []position, pos position) []position {
-	for i := 0; i < len(closeList); i++ {
+	for i := len(closeList) - 1; i >= 0; i-- {
 		if isSameState(pos.state, closeList[i].state) {
 			return openList
 		}
 	}
 	l := -1
-	for i := 0; i < len(openList); i++ {
-		if pos.heuristic >= openList[i].heuristic && l == -1 {
+	for i := len(openList) - 1; i >= 0; i-- {
+		if pos.heuristic < openList[i].heuristic && l == -1 {
 			l = i
 		}
 		if isSameState(pos.state, openList[i].state) {
@@ -56,11 +56,12 @@ func insertInOpenList(openList []position, closeList []position, pos position) [
 			openList = openList[:len(openList)-1]
 		}
 	}
-	if l == -1 {
-		l = len(openList)
+	if l != len(openList) {
+		l++
+		return append(openList[:l], append([]position{pos}, openList[l:]...)...)
+	} else {
+		return append(openList, pos)
 	}
-	tmp := append(openList[:l], append([]position{pos}, openList[l:]...)...)
-	return tmp
 
 }
 
@@ -119,10 +120,9 @@ func rewind(pos position, closedList []position) {
 }
 
 func Resolve(size int, initial_state []int) {
-	goalState := goalGenerator.Generator(size)
-
 	closedList := make([]position, 0, 1024)
 	openList := make([]position, 0, 1024)
+	goalState := goalGenerator.Generator(size)
 	var pos position
 
 	start := createPosition(size, initial_state, goalState, 0, -1)
