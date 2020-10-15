@@ -1,12 +1,9 @@
 package manhattanDistance
 
-import (
-	//"fmt"
-	"strconv"
-)
+const intSize = 32 << (^uint(0) >> 63)
 
 func abs(n int) int {
-	y := n >> (strconv.IntSize - 1)
+	y := n >> (intSize - 1)
 	return (n ^ y) - y
 }
 
@@ -24,11 +21,3 @@ func GetStateScore(size int, state []int, goal []int) int {
 	}
 	return sum
 }
-
-/*
-func main() {
-	size := 3
-	state := []int{2, 7, 5, 8, 0, 1, 3, 6, 4}
-	fmt.Println(ManhattanDistance(size, state))
-}
-*/

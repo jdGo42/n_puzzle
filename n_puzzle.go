@@ -89,6 +89,5 @@ func main() {
 	} else {
 		fmt.Printf("\033[1;31mPlease put only one file in argument, currently, there is %d argument(s)\033[m\n", len(os.Args)-1)
 	}
-
 	return
 }

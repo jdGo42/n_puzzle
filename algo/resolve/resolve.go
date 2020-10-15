@@ -141,9 +141,3 @@ func Resolve(size int, initial_state []int) {
 	}
 	fmt.Println("Unsolvable puzzle")
 }
-
-/*
-func main() {
-	Resolve(init_state)
-}
-*/
