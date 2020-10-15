@@ -37,10 +37,6 @@ func readFile(name string) ([]int, int, error) {
 		return nil, 0, errors.New("Puzzle size must be at least 2")
 	}
 	initialState := make([]int, size*size)
-	// Should we represent it as an array of int or an array of array of int already there?
-	// Both options are possible, for the first one we can play with %size to get the tile upside and downside
-	// for the second one is [i][j] -1 or +1
-	// i guess we can manage it with only one array good challenge
 	i := 0
 	for scanner.Scan() {
 		if strings.Trim(scanner.Text(), "\n \t")[0] == '#' {
@@ -51,6 +47,13 @@ func readFile(name string) ([]int, int, error) {
 		}
 
 		parts := strings.Split(strings.Trim(scanner.Text(), "\n \t"), " ")
+		for i := 0; i < len(parts); i++ {
+			if len(parts[i]) == 0 {
+				copy(parts[i:], parts[i+1:])
+				parts = parts[:len(parts)-1]
+				i--
+			}
+		}
 		if len(parts) < size {
 			return nil, 0, errors.New("Row too short")
 		}
