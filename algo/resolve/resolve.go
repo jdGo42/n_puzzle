@@ -45,7 +45,7 @@ func insertInOpenList(openList []position, closeList []position, pos position) [
 	}
 	l := -1
 	for i := len(openList) - 1; i >= 0; i-- {
-		if pos.heuristic < openList[i].heuristic && l == -1 {
+		if l == -1 && pos.heuristic < openList[i].heuristic {
 			l = i
 		}
 		if isSameState(pos.state, openList[i].state) {
@@ -112,11 +112,15 @@ func createPosition(size int, state []int, goalState []int, cost int, prev int) 
 	return tmp
 }
 
-func rewind(pos position, closedList []position) {
+func rewind(pos position, closedList []position) int {
+	var ret int
 	if pos.prev >= 0 {
-		rewind(closedList[pos.prev], closedList)
+		ret = rewind(closedList[pos.prev], closedList) + 1
+	} else {
+		ret = 0
 	}
 	fmt.Println(pos.state)
+	return ret
 }
 
 func Resolve(size int, initial_state []int) {
@@ -127,16 +131,17 @@ func Resolve(size int, initial_state []int) {
 
 	start := createPosition(size, initial_state, goalState, 0, -1)
 	openList = append(openList, start)
-	i := 0
 	for len(openList) != 0 {
 		pos = openList[len(openList)-1]
 		openList = openList[:len(openList)-1]
-		i++
+		closedList = append(closedList, pos)
 		if isSameState(pos.state, goalState) {
-			rewind(pos, closedList)
+			n_moves := rewind(pos, closedList)
+			fmt.Printf("Time complexity: %d\n", len(closedList))
+			fmt.Printf("Size complexity: %d\n", len(closedList)+len(openList))
+			fmt.Printf("Number of moves: %d\n", n_moves)
 			return
 		}
-		closedList = append(closedList, pos)
 		openList = visitPosition(size, goalState, pos, openList, closedList)
 	}
 	fmt.Println("Unsolvable puzzle")
