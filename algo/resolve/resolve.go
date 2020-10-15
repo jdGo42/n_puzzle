@@ -2,7 +2,7 @@ package resolve
 
 import (
 	"./goal_generator"
-	"./manhattan"
+	"./heuristics"
 	"fmt"
 )
 
@@ -14,7 +14,7 @@ type position struct {
 }
 
 func getHeuristic(size int, state []int, goalState []int) int {
-	return manhattanDistance.GetStateScore(size, state, goalState)
+	return heuristics.CornerTiles(size, state, goalState)
 }
 
 func getZeroIndex(state []int) int {
@@ -128,7 +128,7 @@ func printTaquin(size int, state []int) {
 		if i != 0 && i%size == 0 {
 			fmt.Printf("\n")
 		}
-		fmt.Printf("%d ", state[i])
+		fmt.Printf("%2d ", state[i])
 	}
 	fmt.Printf("\n\n")
 }

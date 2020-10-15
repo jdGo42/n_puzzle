@@ -4,11 +4,10 @@ import (
 	"./algo/resolve"
 	"bufio"
 	"errors"
-	"fmt" // for print
-	"os"  // for Args and exit
+	"fmt"
+	"os"
 	"strconv"
 	"strings"
-	//"n_puzzle/algo"
 )
 
 var Size int
@@ -47,7 +46,7 @@ func readFile(name string) ([]int, int, error) {
 
 		parts := strings.Split(strings.Trim(scanner.Text(), "\n \t"), " ")
 		for idx := 0; idx < len(parts); idx++ {
-			if len(parts[i]) == 0 {
+			if len(strings.Trim(parts[idx], " ")) == 0 {
 				copy(parts[idx:], parts[idx+1:])
 				parts = parts[:len(parts)-1]
 				idx--
