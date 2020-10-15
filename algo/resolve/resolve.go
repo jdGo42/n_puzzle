@@ -1,15 +1,10 @@
-package main
+package resolve
 
 import (
 	"./goal_generator"
 	"./manhattan"
 	"fmt"
 )
-
-var g_size = 3
-var goalState = goalGenerator.Generator(g_size)
-
-var init_state = []int{0, 2, 7, 4, 1, 3, 8, 6, 5}
 
 type position struct {
 	state     []int
@@ -18,8 +13,8 @@ type position struct {
 	prev      int
 }
 
-func getHeuristic(state []int) int {
-	return manhattanDistance.GetStateScore(g_size, state, goalState)
+func getHeuristic(size int, state []int, goalState []int) int {
+	return manhattanDistance.GetStateScore(size, state, goalState)
 }
 
 func getZeroIndex(state []int) int {
@@ -69,49 +64,49 @@ func insertInOpenList(openList []position, closeList []position, pos position) [
 
 }
 
-func visitPosition(pos position, openList []position, closedList []position) []position {
+func visitPosition(size int, goalState []int, pos position, openList []position, closedList []position) []position {
 	zeroIndex := getZeroIndex(pos.state)
 	indexPrevPos := len(closedList) - 1
 
 	state := make([]int, len(pos.state))
 	var newPos position
-	if zeroIndex/g_size > 0 {
+	if zeroIndex/size > 0 {
 		copy(state, pos.state)
-		state[zeroIndex] = state[zeroIndex-g_size]
-		state[zeroIndex-g_size] = 0
-		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		state[zeroIndex] = state[zeroIndex-size]
+		state[zeroIndex-size] = 0
+		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
-	if zeroIndex/g_size < g_size-1 {
+	if zeroIndex/size < size-1 {
 		copy(state, pos.state)
-		state[zeroIndex] = state[zeroIndex+g_size]
-		state[zeroIndex+g_size] = 0
-		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		state[zeroIndex] = state[zeroIndex+size]
+		state[zeroIndex+size] = 0
+		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
-	if zeroIndex%g_size > 0 {
+	if zeroIndex%size > 0 {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex-1]
 		state[zeroIndex-1] = 0
-		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
-	if zeroIndex%g_size < g_size-1 {
+	if zeroIndex%size < size-1 {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex+1]
 		state[zeroIndex+1] = 0
-		newPos = createPosition(state, pos.cost+1, indexPrevPos)
+		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
 	return openList
 }
 
-func createPosition(state []int, cost int, prev int) position {
+func createPosition(size int, state []int, goalState []int, cost int, prev int) position {
 	var tmp position
 	tmp.state = make([]int, len(state))
 	copy(tmp.state, state)
 	tmp.cost = cost
-	tmp.heuristic = getHeuristic(state) + cost
+	tmp.heuristic = getHeuristic(size, state, goalState) + cost
 	tmp.prev = prev
 	return tmp
 }
@@ -123,12 +118,14 @@ func rewind(pos position, closedList []position) {
 	fmt.Println(pos.state)
 }
 
-func Resolve(initial_state []int) {
-	closedList := make([]position, 0)
-	openList := make([]position, 0)
+func Resolve(size int, initial_state []int) {
+	goalState := goalGenerator.Generator(size)
+
+	closedList := make([]position, 0, 1024)
+	openList := make([]position, 0, 1024)
 	var pos position
 
-	start := createPosition(initial_state, 0, -1)
+	start := createPosition(size, initial_state, goalState, 0, -1)
 	openList = append(openList, start)
 	i := 0
 	for len(openList) != 0 {
@@ -140,11 +137,13 @@ func Resolve(initial_state []int) {
 			return
 		}
 		closedList = append(closedList, pos)
-		openList = visitPosition(pos, openList, closedList)
+		openList = visitPosition(size, goalState, pos, openList, closedList)
 	}
 	fmt.Println("Unsolvable puzzle")
 }
 
+/*
 func main() {
 	Resolve(init_state)
 }
+*/
