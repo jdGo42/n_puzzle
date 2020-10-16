@@ -1,7 +1,6 @@
 package main
 
 import (
-	"./algo/resolve"
 	"bufio"
 	"errors"
 	"flag"
@@ -91,14 +90,33 @@ func readFile(name string) ([]int, int, error) {
 }
 
 func main() {
+	var input []int
+	var size int
+	var err error
+
 	hFlag := flag.String("H", "m", "Pick one of the following heuristics:\nh	Hamming distance\nm	Manhattan distance\nl	Linear conflict + Manhattan\nc	Corner tiles + Linear conflict + Manhattan")
 	fFlag := flag.String("f", "", "File to read input from")
+	sFlag := flag.Int("s", 0, "Size of the map to generate")
+	iFlag := flag.Int("i", 100, "Number of random swap done during map generation")
 	flag.Parse()
-	input, size, err := readFile(*fFlag)
-	if err != nil {
-		fmt.Printf("\033[1;31m%s\033[m\n", err)
-	} else {
-		resolve.Resolve(size, input, *hFlag)
+	if len(*fFlag) != 0 && *sFlag != 0 {
+		fmt.Printf("\033[1;31mYou can only use one of the s and f flags\033[m\n")
+		return
 	}
+	if len(*fFlag) == 0 && *sFlag == 0 {
+		fmt.Printf("\033[1;31mPlease specify a file or the size of the board to generate\033[m\n")
+		return
+	}
+	if len(*fFlag) != 0 {
+		input, size, err = readFile(*fFlag)
+		if err != nil {
+			fmt.Printf("\033[1;31m%s\033[m\n", err)
+			return
+		}
+	} else {
+		size = *sFlag
+		input = Shuffle(size, *iFlag, Generator(*sFlag))
+	}
+	Resolve(size, input, *hFlag)
 	return
 }

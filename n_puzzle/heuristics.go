@@ -1,4 +1,4 @@
-package heuristics
+package main
 
 import ()
 
@@ -129,15 +129,6 @@ func LinearConflict(size int, state []int, goal []int) int {
 	return rc*2 + Manhattan(size, state, goal)
 }
 
-func findPos(v int, state []int) int {
-	for i := 0; i < len(state); i++ {
-		if state[i] == v {
-			return i
-		}
-	}
-	return -1
-}
-
 func isAlreadyIn(v int, slice []int) bool {
 	for i := 0; i < len(slice); i++ {
 		if slice[i] == v {
@@ -154,7 +145,7 @@ func ctSize3(corners []int, size int, state []int, goal []int) int {
 		if state[corners[i]] == goal[corners[i]] {
 			continue
 		}
-		p := findPos(goal[corners[i]], state)
+		p := FindPos(goal[corners[i]], state)
 		if corners[i]%size == p%size || corners[i]/size == p/size {
 			continue
 		}
@@ -196,7 +187,7 @@ func CornerTiles(size int, state []int, goal []int) int {
 		if state[corners[i]] == goal[corners[i]] {
 			continue
 		}
-		p := findPos(goal[corners[i]], state)
+		p := FindPos(goal[corners[i]], state)
 		if corners[i]%size == p%size || corners[i]/size == p/size {
 			continue
 		}

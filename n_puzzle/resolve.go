@@ -1,8 +1,6 @@
-package resolve
+package main
 
 import (
-	"./goal_generator"
-	"./heuristics"
 	"fmt"
 )
 
@@ -15,15 +13,15 @@ type position struct {
 
 func getHeuristic(size int, heuristic string, state []int, goalState []int) int {
 	if heuristic == "h" {
-		return heuristics.Hamming(size, state, goalState)
+		return Hamming(size, state, goalState)
 	} else if heuristic == "m" {
-		return heuristics.Manhattan(size, state, goalState)
+		return Manhattan(size, state, goalState)
 	} else if heuristic == "l" {
-		return heuristics.LinearConflict(size, state, goalState)
+		return LinearConflict(size, state, goalState)
 	} else if heuristic == "c" {
-		return heuristics.CornerTiles(size, state, goalState)
+		return CornerTiles(size, state, goalState)
 	} else {
-		return heuristics.Manhattan(size, state, goalState)
+		return Manhattan(size, state, goalState)
 	}
 }
 
@@ -145,7 +143,7 @@ func printTaquin(size int, state []int) {
 func Resolve(size int, initial_state []int, heuristic string) {
 	closedList := make([]position, 0, 1024)
 	openList := make([]position, 0, 1024)
-	goalState := goalGenerator.Generator(size)
+	goalState := Generator(size)
 	var pos position
 
 	start := createPosition(size, heuristic, initial_state, goalState, 0, -1)
