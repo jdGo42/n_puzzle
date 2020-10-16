@@ -4,6 +4,7 @@ import (
 	"./algo/resolve"
 	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -90,15 +91,14 @@ func readFile(name string) ([]int, int, error) {
 }
 
 func main() {
-	if 2 == len(os.Args) {
-		input, size, err := readFile(os.Args[1])
-		if err != nil {
-			fmt.Printf("\033[1;31m%s\033[m\n", err)
-		} else {
-			resolve.Resolve(size, input)
-		}
+	hFlag := flag.String("H", "m", "Pick one of the following heuristics:\nh	Hamming distance\nm	Manhattan distance\nl	Linear conflict + Manhattan\nc	Corner tiles + Linear conflict + Manhattan")
+	fFlag := flag.String("f", "", "File to read input from")
+	flag.Parse()
+	input, size, err := readFile(*fFlag)
+	if err != nil {
+		fmt.Printf("\033[1;31m%s\033[m\n", err)
 	} else {
-		fmt.Printf("\033[1;31mPlease put only one file in argument, currently, there is %d argument(s)\033[m\n", len(os.Args)-1)
+		resolve.Resolve(size, input, *hFlag)
 	}
 	return
 }

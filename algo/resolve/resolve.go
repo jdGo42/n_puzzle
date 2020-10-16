@@ -13,8 +13,18 @@ type position struct {
 	prev      int
 }
 
-func getHeuristic(size int, state []int, goalState []int) int {
-	return heuristics.CornerTiles(size, state, goalState)
+func getHeuristic(size int, heuristic string, state []int, goalState []int) int {
+	if heuristic == "h" {
+		return heuristics.Hamming(size, state, goalState)
+	} else if heuristic == "m" {
+		return heuristics.Manhattan(size, state, goalState)
+	} else if heuristic == "l" {
+		return heuristics.LinearConflict(size, state, goalState)
+	} else if heuristic == "c" {
+		return heuristics.CornerTiles(size, state, goalState)
+	} else {
+		return heuristics.Manhattan(size, state, goalState)
+	}
 }
 
 func getZeroIndex(state []int) int {
@@ -62,10 +72,9 @@ func insertInOpenList(openList []position, closeList []position, pos position) [
 	} else {
 		return append(openList, pos)
 	}
-
 }
 
-func visitPosition(size int, goalState []int, pos position, openList []position, closedList []position) []position {
+func visitPosition(size int, heuristic string, goalState []int, pos position, openList []position, closedList []position) []position {
 	zeroIndex := getZeroIndex(pos.state)
 	indexPrevPos := len(closedList) - 1
 
@@ -75,39 +84,39 @@ func visitPosition(size int, goalState []int, pos position, openList []position,
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex-size]
 		state[zeroIndex-size] = 0
-		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
+		newPos = createPosition(size, heuristic, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
 	if zeroIndex/size < size-1 {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex+size]
 		state[zeroIndex+size] = 0
-		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
+		newPos = createPosition(size, heuristic, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
 	if zeroIndex%size > 0 {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex-1]
 		state[zeroIndex-1] = 0
-		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
+		newPos = createPosition(size, heuristic, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
 	if zeroIndex%size < size-1 {
 		copy(state, pos.state)
 		state[zeroIndex] = state[zeroIndex+1]
 		state[zeroIndex+1] = 0
-		newPos = createPosition(size, state, goalState, pos.cost+1, indexPrevPos)
+		newPos = createPosition(size, heuristic, state, goalState, pos.cost+1, indexPrevPos)
 		openList = insertInOpenList(openList, closedList, newPos)
 	}
 	return openList
 }
 
-func createPosition(size int, state []int, goalState []int, cost int, prev int) position {
+func createPosition(size int, heuristic string, state []int, goalState []int, cost int, prev int) position {
 	var tmp position
 	tmp.state = make([]int, len(state))
 	copy(tmp.state, state)
 	tmp.cost = cost
-	tmp.heuristic = getHeuristic(size, state, goalState) + cost
+	tmp.heuristic = getHeuristic(size, heuristic, state, goalState) + cost
 	tmp.prev = prev
 	return tmp
 }
@@ -133,13 +142,13 @@ func printTaquin(size int, state []int) {
 	fmt.Printf("\n\n")
 }
 
-func Resolve(size int, initial_state []int) {
+func Resolve(size int, initial_state []int, heuristic string) {
 	closedList := make([]position, 0, 1024)
 	openList := make([]position, 0, 1024)
 	goalState := goalGenerator.Generator(size)
 	var pos position
 
-	start := createPosition(size, initial_state, goalState, 0, -1)
+	start := createPosition(size, heuristic, initial_state, goalState, 0, -1)
 	openList = append(openList, start)
 	for len(openList) != 0 {
 		pos = openList[len(openList)-1]
@@ -152,7 +161,7 @@ func Resolve(size int, initial_state []int) {
 			fmt.Printf("Number of moves: %d\n", n_moves)
 			return
 		}
-		openList = visitPosition(size, goalState, pos, openList, closedList)
+		openList = visitPosition(size, heuristic, goalState, pos, openList, closedList)
 	}
 	fmt.Println("Unsolvable puzzle")
 }
