@@ -140,13 +140,17 @@ func printTaquin(size int, state []int) {
 	fmt.Printf("\n\n")
 }
 
-func Resolve(size int, initial_state []int, heuristic string) {
+func Resolve(size int, initialState []int, heuristic string) {
 	closedList := make([]position, 0, 1024)
 	openList := make([]position, 0, 1024)
 	goalState := Generator(size)
 	var pos position
 
-	start := createPosition(size, heuristic, initial_state, goalState, 0, -1)
+	if !IsSolvable(size, initialState, goalState) {
+		fmt.Println("Unsolvable puzzle")
+		return
+	}
+	start := createPosition(size, heuristic, initialState, goalState, 0, -1)
 	openList = append(openList, start)
 	for len(openList) != 0 {
 		pos = openList[len(openList)-1]
