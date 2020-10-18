@@ -1,6 +1,8 @@
 package main
 
-import ()
+import (
+	"sync"
+)
 
 const intSize = 32 << (^uint(0) >> 63)
 
@@ -13,13 +15,24 @@ func Manhattan(size int, state []int, goal []int) int {
 	sum := 0
 	l := size * size
 
+	c1 := make(chan int, l)
+	var wg sync.WaitGroup
+	wg.Add(l)
+
 	for i := 0; i < l; i++ {
-		for j := 0; j < l; j++ {
-			if state[i] == goal[j] {
-				sum += abs(j/size-i/size) + abs(j%size-i%size)
-				break
+		go func(i int) {
+			defer wg.Done()
+			for j := 0; j < l; j++ {
+				if state[i] == goal[j] {
+					c1 <- abs(j/size-i/size) + abs(j%size-i%size)
+					break
+				}
 			}
-		}
+		}(i)
+	}
+	wg.Wait()
+	for i := 0; i < l; i++ {
+		sum += <-c1
 	}
 	return sum
 }
@@ -95,6 +108,11 @@ func getConflicsCount(tiles []tile) int {
 func LinearConflict(size int, state []int, goal []int) int {
 	rc := 0
 
+	c1 := make(chan int)
+	go func() {
+		c1 <- Manhattan(size, state, goal)
+	}()
+
 	for i := 0; i < size; i++ {
 		rowTiles := make([]tile, 0)
 		colTiles := make([]tile, 0)
@@ -126,7 +144,7 @@ func LinearConflict(size int, state []int, goal []int) int {
 			rc += getConflicsCount(colTiles)
 		}
 	}
-	return rc*2 + Manhattan(size, state, goal)
+	return rc*2 + <-c1
 }
 
 func isAlreadyIn(v int, slice []int) bool {
@@ -141,14 +159,19 @@ func isAlreadyIn(v int, slice []int) bool {
 func ctSize3(corners []int, size int, state []int, goal []int) int {
 	tiles := make([]int, 0)
 
+	c1 := make(chan int)
+	go func() {
+		c1 <- LinearConflict(size, state, goal)
+	}()
+
 	for i := 0; i < len(corners); i++ {
 		if state[corners[i]] == goal[corners[i]] {
 			continue
 		}
-		p := FindPos(goal[corners[i]], state)
-		if corners[i]%size == p%size || corners[i]/size == p/size {
-			continue
-		}
+		//	p := FindPos(goal[corners[i]], state)
+		//	if corners[i]%size == p%size || corners[i]/size == p/size {
+		//		continue
+		//	}
 		if corners[i]%size == 0 {
 			if state[corners[i]+1] == goal[corners[i]+1] && !isAlreadyIn(corners[i]+1, tiles) {
 				tiles = append(tiles, corners[i]+1)
@@ -170,7 +193,7 @@ func ctSize3(corners []int, size int, state []int, goal []int) int {
 			}
 		}
 	}
-	return len(tiles)*2 + LinearConflict(size, state, goal)
+	return len(tiles)*2 + <-c1
 
 }
 
@@ -181,36 +204,33 @@ func CornerTiles(size int, state []int, goal []int) int {
 	} else if size == 3 {
 		return ctSize3(corners, size, state, goal)
 	}
-	c := 0
+	counter := 0
+
+	c1 := make(chan int)
+	go func() {
+		c1 <- LinearConflict(size, state, goal)
+	}()
 
 	for i := 0; i < len(corners); i++ {
 		if state[corners[i]] == goal[corners[i]] {
 			continue
 		}
-		p := FindPos(goal[corners[i]], state)
-		if corners[i]%size == p%size || corners[i]/size == p/size {
-			continue
+		//	p := FindPos(goal[corners[i]], state)
+		//	if corners[i]%size == p%size || corners[i]/size == p/size {
+		//		continue
+		//	}
+		if corners[i]%size == 0 && state[corners[i]+1] == goal[corners[i]+1] {
+			counter++
 		}
-		if corners[i]%size == 0 {
-			if state[corners[i]+1] == goal[corners[i]+1] {
-				c++
-			}
+		if corners[i]%size == size-1 && state[corners[i]-1] == goal[corners[i]-1] {
+			counter++
 		}
-		if corners[i]%size == size-1 {
-			if state[corners[i]-1] == goal[corners[i]-1] {
-				c++
-			}
+		if corners[i]/size == 0 && state[corners[i]+size] == goal[corners[i]+size] {
+			counter++
 		}
-		if corners[i]/size == 0 {
-			if state[corners[i]+size] == goal[corners[i]+size] {
-				c++
-			}
-		}
-		if corners[i]/size == size-1 {
-			if state[corners[i]-size] == goal[corners[i]-size] {
-				c++
-			}
+		if corners[i]/size == size-1 && state[corners[i]-size] == goal[corners[i]-size] {
+			counter++
 		}
 	}
-	return c*2 + LinearConflict(size, state, goal)
+	return counter*2 + <-c1
 }
